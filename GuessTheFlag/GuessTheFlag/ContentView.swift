@@ -25,6 +25,10 @@ struct ContentView: View {
     @State private var score = 0
     @State private var flagsGuessed = 0
     
+    // Animation
+    @State private var isRotated = false
+    @State private var flagSelected = ""
+    
     @State private var countries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"].shuffled()
     @State private var correctAnswer = Int.random(in: 0...2)
     
@@ -53,8 +57,14 @@ struct ContentView: View {
                     ForEach(0..<3) { number in
                         Button {
                             flagTapped(number)
+                            self.isRotated.toggle()
                         } label: {
                             FlagImage(imageFileName: countries[number])
+                                .background((countries[correctAnswer] != countries[number] && isRotated) ? .red : .green.opacity(0))
+                                .background((countries[correctAnswer] == countries[number] && isRotated) ? .green : .red.opacity(0))
+                                .opacity((flagSelected != countries[number] && flagSelected != "") ? 0.25 : 1)
+                                .rotationEffect(Angle.degrees(flagSelected == countries[number] ? 360 : 0))
+                                .animation(Animation.linear)
                         }
                     }
                 }
@@ -95,10 +105,13 @@ struct ContentView: View {
         }
         flagsGuessed += 1
         showingScore = true
+        flagSelected = countries[number]
         maxScoreReached()
     }
     
     func askQuestion() {
+        flagSelected = ""
+        isRotated = false
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
     }
